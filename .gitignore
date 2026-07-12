@@ -1,0 +1,14 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Build and distribution directories
+dist/
+build/
+.dist/
+out/
+
+# Environment variables
+.env
+
