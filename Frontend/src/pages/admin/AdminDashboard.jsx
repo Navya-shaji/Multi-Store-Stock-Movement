@@ -30,10 +30,10 @@ function AdminDashboard() {
   }, []);
 
   return (
-    <div style={{ textAlign: "left", padding: "20px" }}>
+    <div >
       <h1>Admin Dashboard</h1>
 
-      <nav style={{ marginBottom: "30px", borderBottom: "1px solid #ccc", paddingBottom: "15px" }}>
+      <nav >
         <Link to="/create-product" style={{ marginRight: "15px" }}>Create Product</Link>
         <Link to="/create-store" style={{ marginRight: "15px" }}>Create Store</Link>
         <Link to="/create-stock" style={{ marginRight: "15px" }}>Create Stock Entry</Link>
@@ -42,7 +42,7 @@ function AdminDashboard() {
       </nav>
 
       <h2>Current Stock levels</h2>
-      <table border="1" cellPadding="8" style={{ width: "100%", marginBottom: "30px", borderCollapse: "collapse" }}>
+      <table border="1" >
         <thead>
           <tr style={{ background: "#eee" }}>
             <th>Product Name</th>
@@ -53,7 +53,7 @@ function AdminDashboard() {
         </thead>
         <tbody>
           {stocks.length === 0 ? (
-            <tr><td colSpan="4">No stock found.</td></tr>
+            <tr><td >No stock found.</td></tr>
           ) : (
             stocks.map((item) => (
               <tr key={item._id}>
@@ -68,7 +68,7 @@ function AdminDashboard() {
       </table>
 
       <h2>Registered Products</h2>
-      <table border="1" cellPadding="8" style={{ width: "100%", marginBottom: "30px", borderCollapse: "collapse" }}>
+      <table border="1" >
         <thead>
           <tr style={{ background: "#eee" }}>
             <th>Product Name</th>
@@ -77,7 +77,7 @@ function AdminDashboard() {
         </thead>
         <tbody>
           {products.length === 0 ? (
-            <tr><td colSpan="2">No products registered.</td></tr>
+            <tr><td >No products registered.</td></tr>
           ) : (
             products.map((item) => (
               <tr key={item._id}>
@@ -90,7 +90,7 @@ function AdminDashboard() {
       </table>
 
       <h2>Registered Stores</h2>
-      <table border="1" cellPadding="8" style={{ width: "100%", marginBottom: "30px", borderCollapse: "collapse" }}>
+      <table border="1" >
         <thead>
           <tr style={{ background: "#eee" }}>
             <th>Store Name</th>
@@ -110,7 +110,7 @@ function AdminDashboard() {
       </table>
 
       <h2>Transfer History</h2>
-      <table border="1" cellPadding="8" style={{ width: "100%", borderCollapse: "collapse" }}>
+      <table border="1" >
         <thead>
           <tr style={{ background: "#eee" }}>
             <th>Product</th>
@@ -122,7 +122,7 @@ function AdminDashboard() {
         </thead>
         <tbody>
           {transfers.length === 0 ? (
-            <tr><td colSpan="5">No transfer history.</td></tr>
+            <tr><td >No transfer history.</td></tr>
           ) : (
             transfers.map((item) => (
               <tr key={item._id}>

@@ -41,7 +41,7 @@ function AdjustStock() {
       <h1>Adjust Stock</h1>
       <form onSubmit={handleSubmit}>
         <select name="stockId" onChange={handleChange} required>
-          <option value="">-- Select Stock Entry --</option>
+          <option value="">Select Stock Entry </option>
           {stocks.map((item) => (
             <option key={item._id} value={item._id}>
               {item.product?.name} at {item.store?.name} (Current: {item.quantity})
