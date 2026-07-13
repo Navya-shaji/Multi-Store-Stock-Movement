@@ -28,9 +28,14 @@ export async function getAllStore(req,res) {
         if(!Stores){
             return res.status(400).json({
                 success:false,
-                message:"Stores fetched successfully"
+                message:"Stores not found"
             })
         }
+        return res.status(200).json({
+            success:true,
+            message:"Stores fetched successfully",
+            Stores
+        })
     } catch (error) {
           return res.status(400).json({
             success: false,

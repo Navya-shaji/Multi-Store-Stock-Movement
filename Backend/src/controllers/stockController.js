@@ -24,8 +24,9 @@ export async function createStock(req, res) {
 
 export async function getAllStock(req, res) {
     try {
-        const Stores = await getAllStcoks()
-        return res.status(200).json({ success: true, message: "Stock fetched " })
+        const { threshold } = req.query
+        const Stocks = await getAllStcoks(threshold)
+        return res.status(200).json({ success: true, message: "Stock fetched successfully", Stocks })
     } catch (error) {
         return res.status(400).json({
             success: false,
@@ -63,13 +64,15 @@ export async function getStockByProductStore(req, res) {
 
 export async function EditStock(req, res) {
     try {
-        const { productId } = req.params
-        const { change } = req.body
-        const stock = await updateStock(productId)
-        stock.quantity += change;
-
-        return res.status(200).json({ success: true, message: "Stcok Updated successfully" })
-
+        const { stockId, change } = req.body
+        if (!stockId || change === undefined) {
+            return res.status(400).json({ success: false, message: "stockId and change are required" })
+        }
+        const stock = await updateStock(stockId, Number(change))
+        if (!stock) {
+            return res.status(400).json({ success: false, message: "Adjustment failed: Insufficient stock or stock record not found" })
+        }
+        return res.status(200).json({ success: true, message: "Stock Updated successfully", stock })
     } catch (error) {
         return res.status(400).json({
             success: false,

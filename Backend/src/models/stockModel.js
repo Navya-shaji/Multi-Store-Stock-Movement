@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const stockSchema=new mongoose.Schema({
     product:{
          type: mongoose.Schema.Types.ObjectId,
-         ref:"Products",
+         ref:"Product",
          required:true
     },
     store:{
