@@ -1,23 +1,13 @@
-import mongoose from "mongoose";
 import { createTransfer, getTransfer } from "../services/transferRepository.js";
 import { getStockByProductAndStore } from "../services/stockRepository.js";
 import { Stock } from "../models/stockModel.js";
 import Transfer from "../models/transferModel.js";
 
 export const addTransfer = async (req, res) => {
-    const session = await mongoose.startSession();
     try {
-        let useTransactions = true;
-        try {
-            session.startTransaction();
-        } catch (e) {
-            useTransactions = false;
-        }
-
         const { product, fromStore, toStore, quantity } = req.body;
 
         if (!product || !fromStore || !toStore || !quantity) {
-            if (useTransactions) await session.abortTransaction();
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
@@ -25,7 +15,6 @@ export const addTransfer = async (req, res) => {
         }
 
         if (Number(quantity) <= 0) {
-            if (useTransactions) await session.abortTransaction();
             return res.status(400).json({
                 success: false,
                 message: "Transfer quantity must be greater than zero"
@@ -33,7 +22,6 @@ export const addTransfer = async (req, res) => {
         }
 
         if (fromStore === toStore) {
-            if (useTransactions) await session.abortTransaction();
             return res.status(400).json({
                 success: false,
                 message: "Source and destination stores must be different"
@@ -42,7 +30,6 @@ export const addTransfer = async (req, res) => {
 
         const sourceStock = await getStockByProductAndStore(product, fromStore);
         if (!sourceStock || sourceStock.quantity < Number(quantity)) {
-            if (useTransactions) await session.abortTransaction();
             return res.status(400).json({
                 success: false,
                 message: "Insufficient stock in the source store"
@@ -52,11 +39,10 @@ export const addTransfer = async (req, res) => {
         const updatedSource = await Stock.findOneAndUpdate(
             { _id: sourceStock._id, quantity: { $gte: Number(quantity) } },
             { $inc: { quantity: -Number(quantity) } },
-            { returnDocument: 'after', session: useTransactions ? session : null }
+            { returnDocument: 'after' }
         );
 
         if (!updatedSource) {
-            if (useTransactions) await session.abortTransaction();
             return res.status(400).json({
                 success: false,
                 message: "Insufficient stock in the source store"
@@ -64,28 +50,26 @@ export const addTransfer = async (req, res) => {
         }
 
         try {
-            const destStock = await Stock.findOne({ product, store: toStore }).session(useTransactions ? session : null);
+            const destStock = await Stock.findOne({ product, store: toStore });
             if (destStock) {
                 await Stock.updateOne(
                     { _id: destStock._id },
-                    { $inc: { quantity: Number(quantity) } },
-                    { session: useTransactions ? session : null }
+                    { $inc: { quantity: Number(quantity) } }
                 );
             } else {
-                await Stock.create(
-                    [{ product, store: toStore, quantity: Number(quantity) }],
-                    { session: useTransactions ? session : null }
-                );
+                await Stock.create({
+                    product,
+                    store: toStore,
+                    quantity: Number(quantity)
+                });
             }
 
-            const [transfer] = await Transfer.create(
-                [{ product, fromStore, toStore, quantity: Number(quantity) }],
-                { session: useTransactions ? session : null }
-            );
-
-            if (useTransactions) {
-                await session.commitTransaction();
-            }
+            const transfer = await Transfer.create({
+                product,
+                fromStore,
+                toStore,
+                quantity: Number(quantity)
+            });
 
             return res.status(201).json({
                 success: true,
@@ -94,24 +78,15 @@ export const addTransfer = async (req, res) => {
             });
 
         } catch (innerError) {
-            if (useTransactions) {
-                await session.abortTransaction();
-            } else {
-                await Stock.updateOne({ _id: sourceStock._id }, { $inc: { quantity: Number(quantity) } });
-            }
+            await Stock.updateOne({ _id: sourceStock._id }, { $inc: { quantity: Number(quantity) } });
             throw innerError;
         }
 
     } catch (error) {
-        if (session.inTransaction()) {
-            await session.abortTransaction();
-        }
         return res.status(500).json({
             success: false,
             message: error.message
         });
-    } finally {
-        session.endSession();
     }
 };
 

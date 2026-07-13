@@ -13,12 +13,7 @@ function CreateProduct() {
     if (val.trim() === "") {
       setSku("");
     } else {
-      const generated = val
-        .trim()
-        .toUpperCase()
-        .replace(/[^A-Z0-9]+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "");
+      const generated = val.toUpperCase().split(" ").join("-");
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
       setSku(`${generated}-${randomSuffix}`);
     }
