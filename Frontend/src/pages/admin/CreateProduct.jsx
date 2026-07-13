@@ -3,46 +3,58 @@ import { createProduct } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 
 function CreateProduct() {
-  const [formData, setFormData] = useState({
-    name: "",
-    sku: "",
-  });
-  const handleChnage = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const [name, setName] = useState("");
+  const [sku, setSku] = useState("");
   const navigate = useNavigate();
+
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    setName(val);
+    if (val.trim() === "") {
+      setSku("");
+    } else {
+      const generated = val
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      setSku(`${generated}-${randomSuffix}`);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await createProduct(formData);
-      console.log(data);
+      await createProduct({ name, sku });
       navigate("/dashboard");
     } catch (error) {
       alert(error.response?.data?.message || "Product creation Failed");
     }
   };
+
   return (
     <div>
       <h1>Create Product</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          name="name"
           placeholder="Enter Product Name"
-          onChange={handleChnage}
+          value={name}
+          onChange={handleNameChange}
+          required
         />
-
+        <br /><br />
         <input
           type="text"
-          name="sku"
-          placeholder="Enter Unique SKU"
-          onChange={handleChnage}
+          placeholder="Unique SKU (Auto-generated)"
+          value={sku}
+          onChange={(e) => setSku(e.target.value)}
+          required
         />
-        <br />
-        <button type="submit">CreateProduct</button>
+        <br /><br />
+        <button type="submit">Create Product</button>
       </form>
     </div>
   );

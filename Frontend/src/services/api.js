@@ -4,7 +4,6 @@ const api = axios.create({
     baseURL: "http://localhost:1212"
 });
 
-// Automatically add token to Authorization header if present
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -57,8 +56,8 @@ export const createStock = async (stockData) => {
     return response.data;
 };
 
-export const getAllStock = async () => {
-    const response = await api.get("/stock");
+export const getAllStock = async (threshold) => {
+    const response = await api.get("/stock", { params: { threshold } });
     return response.data;
 };
 

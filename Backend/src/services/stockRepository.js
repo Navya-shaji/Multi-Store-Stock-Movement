@@ -30,6 +30,6 @@ export const updateStock = async (id, change) => {
     return await Stock.findOneAndUpdate(
         query,
         { $inc: { quantity: change } },
-        { new: true, runValidators: true }
+        { returnDocument: 'after', runValidators: true }
     );
 };

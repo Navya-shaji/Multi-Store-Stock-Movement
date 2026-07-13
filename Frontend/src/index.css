@@ -110,7 +110,6 @@ code {
   background: var(--code-bg);
 }
 
-/* Extended UI Styles */
 .nav-container {
   display: flex;
   justify-content: space-between;

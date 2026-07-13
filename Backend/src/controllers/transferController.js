@@ -40,7 +40,6 @@ export const addTransfer = async (req, res) => {
             });
         }
 
-        // Verify source store stock
         const sourceStock = await getStockByProductAndStore(product, fromStore);
         if (!sourceStock || sourceStock.quantity < Number(quantity)) {
             if (useTransactions) await session.abortTransaction();
@@ -50,11 +49,10 @@ export const addTransfer = async (req, res) => {
             });
         }
 
-        // Deduct from source store atomically (guarantees stock never goes negative)
         const updatedSource = await Stock.findOneAndUpdate(
             { _id: sourceStock._id, quantity: { $gte: Number(quantity) } },
             { $inc: { quantity: -Number(quantity) } },
-            { new: true, session: useTransactions ? session : null }
+            { returnDocument: 'after', session: useTransactions ? session : null }
         );
 
         if (!updatedSource) {
@@ -66,7 +64,6 @@ export const addTransfer = async (req, res) => {
         }
 
         try {
-            // Add to or create in destination store
             const destStock = await Stock.findOne({ product, store: toStore }).session(useTransactions ? session : null);
             if (destStock) {
                 await Stock.updateOne(
@@ -81,7 +78,6 @@ export const addTransfer = async (req, res) => {
                 );
             }
 
-            // Create transfer log
             const [transfer] = await Transfer.create(
                 [{ product, fromStore, toStore, quantity: Number(quantity) }],
                 { session: useTransactions ? session : null }
@@ -101,7 +97,6 @@ export const addTransfer = async (req, res) => {
             if (useTransactions) {
                 await session.abortTransaction();
             } else {
-                // Manual rollback of deduction if standalone DB fails halfway
                 await Stock.updateOne({ _id: sourceStock._id }, { $inc: { quantity: Number(quantity) } });
             }
             throw innerError;
@@ -119,7 +114,6 @@ export const addTransfer = async (req, res) => {
         session.endSession();
     }
 };
-
 
 export const getTransfers = async (req, res) => {
     try {

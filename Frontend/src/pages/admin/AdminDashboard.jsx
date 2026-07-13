@@ -1,18 +1,27 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllStock, getTransfers } from "../../services/api";
+import { getAllStock, getTransfers, getAllProduct, getAllStore } from "../../services/api";
 
 function AdminDashboard() {
   const [stocks, setStocks] = useState([]);
   const [transfers, setTransfers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [stores, setStores] = useState([]);
 
   useEffect(() => {
     async function loadDashboard() {
       try {
         const stockData = await getAllStock();
         setStocks(stockData.Stocks || []);
+
         const transData = await getTransfers();
         setTransfers(transData.transfers || []);
+
+        const prodData = await getAllProduct();
+        setProducts(prodData.Products || []);
+
+        const storeData = await getAllStore();
+        setStores(storeData.Stores || []);
       } catch (error) {
         console.log(error);
       }
@@ -24,7 +33,6 @@ function AdminDashboard() {
     <div style={{ textAlign: "left", padding: "20px" }}>
       <h1>Admin Dashboard</h1>
 
-      {/* Navigation links */}
       <nav style={{ marginBottom: "30px", borderBottom: "1px solid #ccc", paddingBottom: "15px" }}>
         <Link to="/create-product" style={{ marginRight: "15px" }}>Create Product</Link>
         <Link to="/create-store" style={{ marginRight: "15px" }}>Create Store</Link>
@@ -33,7 +41,6 @@ function AdminDashboard() {
         <Link to="/transfer-stock" style={{ marginRight: "15px" }}>Transfer Stock</Link>
       </nav>
 
-      {/* Stocks display */}
       <h2>Current Stock levels</h2>
       <table border="1" cellPadding="8" style={{ width: "100%", marginBottom: "30px", borderCollapse: "collapse" }}>
         <thead>
@@ -60,7 +67,48 @@ function AdminDashboard() {
         </tbody>
       </table>
 
-      {/* Transfers logs */}
+      <h2>Registered Products</h2>
+      <table border="1" cellPadding="8" style={{ width: "100%", marginBottom: "30px", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ background: "#eee" }}>
+            <th>Product Name</th>
+            <th>SKU</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.length === 0 ? (
+            <tr><td colSpan="2">No products registered.</td></tr>
+          ) : (
+            products.map((item) => (
+              <tr key={item._id}>
+                <td>{item.name}</td>
+                <td>{item.sku}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+
+      <h2>Registered Stores</h2>
+      <table border="1" cellPadding="8" style={{ width: "100%", marginBottom: "30px", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ background: "#eee" }}>
+            <th>Store Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {stores.length === 0 ? (
+            <tr><td>No stores registered.</td></tr>
+          ) : (
+            stores.map((item) => (
+              <tr key={item._id}>
+                <td>{item.name}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+
       <h2>Transfer History</h2>
       <table border="1" cellPadding="8" style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>

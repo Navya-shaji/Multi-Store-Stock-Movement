@@ -1,6 +1,5 @@
 import { createProducts, getAllProducts } from "../services/productRepository.js"
 
-//create Products
 export async function createProduct(req, res) {
     try {
         const { name, sku } = req.body
@@ -24,8 +23,6 @@ export async function createProduct(req, res) {
     }
 }
 
-//Fetch Products
-
 export async function getAllProduct(req, res) {
     try {
         const Products = await getAllProducts()
@@ -47,5 +44,3 @@ export async function getAllProduct(req, res) {
         })
     }
 }
-
-

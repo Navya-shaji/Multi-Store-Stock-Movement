@@ -1,42 +1,34 @@
 import { useState } from "react";
-import {  createStore } from "../../services/api";
+import { createStore } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 
 function CreateStore() {
-  const [formData, setFormData] = useState({
-    name: "",
-    sku: "",
-  });
-  const handleChnage = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const [name, setName] = useState("");
   const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await createStore(formData);
-      console.log(data);
+      await createStore({ name });
       navigate("/dashboard");
     } catch (error) {
       alert(error.response?.data?.message || "Store creation Failed");
     }
   };
+
   return (
     <div>
       <h1>Create Store</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          name="name"
           placeholder="Enter store Name"
-          onChange={handleChnage}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
         />
-
-    
-        <button type="submit">CreateStore</button>
+        <br /><br />
+        <button type="submit">Create Store</button>
       </form>
     </div>
   );

@@ -18,8 +18,6 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/adminlogin" element={<AdminLogin />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        
-        {/* Admin Operational Routes */}
         <Route path="/create-product" element={<AdminRoute><CreateProduct /></AdminRoute>} />
         <Route path="/create-store" element={<AdminRoute><CreateStore /></AdminRoute>} />
         <Route path="/create-stock" element={<AdminRoute><CreateStock /></AdminRoute>} />
