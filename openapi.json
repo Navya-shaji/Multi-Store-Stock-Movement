@@ -1,0 +1,265 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Multi-Store Stock Movement API",
+    "version": "1.0.0",
+    "description": "API specification for managing product inventory, stores, stocks, and stock transfers across multiple stores."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:1212"
+    }
+  ],
+  "paths": {
+    "/signup": {
+      "post": {
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created successfully" },
+          "400": { "description": "Invalid input" },
+          "409": { "description": "User already exists" }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Authenticate user (Shopper)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful" },
+          "400": { "description": "Invalid password or email" }
+        }
+      }
+    },
+    "/adminlogin": {
+      "post": {
+        "summary": "Authenticate administrator",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Admin login successful" },
+          "400": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/product": {
+      "post": {
+        "summary": "Create a product (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "sku"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "sku": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Product created successfully" },
+          "400": { "description": "Missing fields" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "get": {
+        "summary": "List all products",
+        "responses": {
+          "200": { "description": "List of products fetched successfully" }
+        }
+      }
+    },
+    "/store": {
+      "post": {
+        "summary": "Create a store (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Store created successfully" },
+          "400": { "description": "Missing name field" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "get": {
+        "summary": "List all stores",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of stores fetched successfully" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/stock": {
+      "post": {
+        "summary": "Create stock entry for a store (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product", "store", "quantity"],
+                "properties": {
+                  "product": { "type": "string" },
+                  "store": { "type": "string" },
+                  "quantity": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Stock created successfully" },
+          "400": { "description": "Missing fields" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "get": {
+        "summary": "List stocks with low-stock threshold filter",
+        "parameters": [
+          {
+            "name": "threshold",
+            "in": "query",
+            "required": false,
+            "description": "Return stocks with quantity at or below this value",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List of stocks fetched successfully" }
+        }
+      },
+      "put": {
+        "summary": "Adjust stock level (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["stockId", "change"],
+                "properties": {
+                  "stockId": { "type": "string" },
+                  "change": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Stock updated successfully" },
+          "400": { "description": "Insufficient stock or invalid input" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/transfer": {
+      "post": {
+        "summary": "Initiate stock transfer (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product", "fromStore", "toStore", "quantity"],
+                "properties": {
+                  "product": { "type": "string" },
+                  "fromStore": { "type": "string" },
+                  "toStore": { "type": "string" },
+                  "quantity": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Stock transferred successfully" },
+          "400": { "description": "Insufficient stock or invalid transfer params" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "get": {
+        "summary": "Get transfer history (Admin only)",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of transfers fetched successfully" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
