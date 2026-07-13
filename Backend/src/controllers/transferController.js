@@ -1,7 +1,5 @@
 import { createTransfer, getTransfer } from "../services/transferRepository.js";
-import { getStockByProductAndStore } from "../services/stockRepository.js";
-import { Stock } from "../models/stockModel.js";
-import Transfer from "../models/transferModel.js";
+import { deductStock, getStockByProductAndStore, updateStock, createStocks } from "../services/stockRepository.js";
 
 export const addTransfer = async (req, res) => {
     try {
@@ -14,7 +12,8 @@ export const addTransfer = async (req, res) => {
             });
         }
 
-        if (Number(quantity) <= 0) {
+        const qtyNum = Number(quantity);
+        if (qtyNum <= 0) {
             return res.status(400).json({
                 success: false,
                 message: "Transfer quantity must be greater than zero"
@@ -28,59 +27,38 @@ export const addTransfer = async (req, res) => {
             });
         }
 
-        const sourceStock = await getStockByProductAndStore(product, fromStore);
-        if (!sourceStock || sourceStock.quantity < Number(quantity)) {
+        const deductResult = await deductStock(product, fromStore, qtyNum);
+
+        if (deductResult.modifiedCount === 0) {
             return res.status(400).json({
                 success: false,
                 message: "Insufficient stock in the source store"
             });
         }
 
-        const updatedSource = await Stock.findOneAndUpdate(
-            { _id: sourceStock._id, quantity: { $gte: Number(quantity) } },
-            { $inc: { quantity: -Number(quantity) } },
-            { returnDocument: 'after' }
-        );
-
-        if (!updatedSource) {
-            return res.status(400).json({
-                success: false,
-                message: "Insufficient stock in the source store"
-            });
-        }
-
-        try {
-            const destStock = await Stock.findOne({ product, store: toStore });
-            if (destStock) {
-                await Stock.updateOne(
-                    { _id: destStock._id },
-                    { $inc: { quantity: Number(quantity) } }
-                );
-            } else {
-                await Stock.create({
-                    product,
-                    store: toStore,
-                    quantity: Number(quantity)
-                });
-            }
-
-            const transfer = await Transfer.create({
+        const destStock = await getStockByProductAndStore(product, toStore);
+        if (destStock) {
+            await updateStock(destStock._id, qtyNum);
+        } else {
+            await createStocks({
                 product,
-                fromStore,
-                toStore,
-                quantity: Number(quantity)
+                store: toStore,
+                quantity: qtyNum
             });
-
-            return res.status(201).json({
-                success: true,
-                message: "Stock transferred successfully",
-                transfer
-            });
-
-        } catch (innerError) {
-            await Stock.updateOne({ _id: sourceStock._id }, { $inc: { quantity: Number(quantity) } });
-            throw innerError;
         }
+
+        const transfer = await createTransfer({
+            product,
+            fromStore,
+            toStore,
+            quantity: qtyNum
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "Stock transferred successfully",
+            transfer
+        });
 
     } catch (error) {
         return res.status(500).json({

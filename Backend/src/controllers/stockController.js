@@ -70,7 +70,7 @@ export async function EditStock(req, res) {
         }
         const stock = await updateStock(stockId, Number(change))
         if (!stock) {
-            return res.status(400).json({ success: false, message: "Adjustment failed: Insufficient stock or stock record not found" })
+            return res.status(400).json({ success: false, message: "stock record not found" })
         }
         return res.status(200).json({ success: true, message: "Stock Updated successfully", stock })
     } catch (error) {
